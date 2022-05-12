@@ -95,69 +95,69 @@ RUN sudo chown -R gitpod:gitpod /etc/php
 COPY nginx.conf /etc/nginx
 
 #Selenium required for MFTF
-RUN sudo wget -c https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
-RUN sudo wget -c https://chromedriver.storage.googleapis.com/80.0.3987.16/chromedriver_linux64.zip
-RUN sudo unzip chromedriver_linux64.zip
+# RUN sudo wget -c https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
+# RUN sudo wget -c https://chromedriver.storage.googleapis.com/80.0.3987.16/chromedriver_linux64.zip
+# RUN sudo unzip chromedriver_linux64.zip
 
 # Install Chrome and Chromium
-RUN sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && sudo dpkg -i google-chrome-stable_current_amd64.deb; sudo apt-get -fy install \
-    && sudo apt-get install -yq \
-       gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
-       libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
-       libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 \
-       libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates \
-       fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+# RUN sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+#    && sudo dpkg -i google-chrome-stable_current_amd64.deb; sudo apt-get -fy install \
+#    && sudo apt-get install -yq \
+#       gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+#       libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
+#       libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 \
+#       libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates \
+#       fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 
-ENV BLACKFIRE_LOG_LEVEL 1
-ENV BLACKFIRE_LOG_FILE /var/log/blackfire/blackfire.log
-ENV BLACKFIRE_SOCKET unix:///tmp/agent.sock
-ENV BLACKFIRE_SOURCEDIR /etc/blackfire
-ENV BLACKFIRE_USER gitpod
+#ENV BLACKFIRE_LOG_LEVEL 1
+#ENV BLACKFIRE_LOG_FILE /var/log/blackfire/blackfire.log
+#ENV BLACKFIRE_SOCKET unix:///tmp/agent.sock
+#ENV BLACKFIRE_SOURCEDIR /etc/blackfire
+#ENV BLACKFIRE_USER gitpod
 
-RUN curl -sS https://packagecloud.io/gpg.key | sudo apt-key add \
-    && curl -sS https://packages.blackfire.io/gpg.key | sudo apt-key add \
-    && sudo echo "deb http://packages.blackfire.io/debian any main" | sudo tee /etc/apt/sources.list.d/blackfire.list \
-    && sudo apt-get update \
-    && sudo apt-get install -y blackfire-agent \
-    && sudo apt-get install -y blackfire-php
+#RUN curl -sS https://packagecloud.io/gpg.key | sudo apt-key add \
+#    && curl -sS https://packages.blackfire.io/gpg.key | sudo apt-key add \
+#    && sudo echo "deb http://packages.blackfire.io/debian any main" | sudo tee /etc/apt/sources.list.d/blackfire.list \
+#    && sudo apt-get update \
+#    && sudo apt-get install -y blackfire-agent \
+#    && sudo apt-get install -y blackfire-php
 
-RUN \
-    version=$(php -r "echo PHP_MAJOR_VERSION, PHP_MINOR_VERSION;") \
-    && sudo curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/${version} \
-    && sudo tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && sudo mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so
+#RUN \
+#    version=$(php -r "echo PHP_MAJOR_VERSION, PHP_MINOR_VERSION;") \
+#    && sudo curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/${version} \
+#    && sudo tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
+#    && sudo mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so
 
-COPY blackfire-agent.ini /etc/blackfire/agent
-COPY blackfire-php.ini /etc/php/7.4/fpm/conf.d/92-blackfire-config.ini
-COPY blackfire-php.ini /etc/php/7.4/cli/conf.d/92-blackfire-config.ini
+#COPY blackfire-agent.ini /etc/blackfire/agent
+#COPY blackfire-php.ini /etc/php/7.4/fpm/conf.d/92-blackfire-config.ini
+#COPY blackfire-php.ini /etc/php/7.4/cli/conf.d/92-blackfire-config.ini
 
-COPY blackfire-run.sh /blackfire-run.sh
+#COPY blackfire-run.sh /blackfire-run.sh
 
-ENTRYPOINT ["/bin/bash", "/blackfire-run.sh"]
+#ENTRYPOINT ["/bin/bash", "/blackfire-run.sh"]
 
 #Install Tideways
-RUN sudo apt-get update
-RUN sudo echo 'deb http://s3-eu-west-1.amazonaws.com/tideways/packages debian main' | sudo tee /etc/apt/sources.list.d/tideways.list && \
-    sudo curl -sS 'https://s3-eu-west-1.amazonaws.com/tideways/packages/EEB5E8F4.gpg' | sudo apt-key add -
-RUN DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tideways-daemon && \
-    sudo apt-get autoremove --assume-yes && \
-    sudo apt-get clean && \
-    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN sudo apt-get update
+#RUN sudo echo 'deb http://s3-eu-west-1.amazonaws.com/tideways/packages debian main' | sudo tee /etc/apt/sources.list.d/tideways.list && \
+#    sudo curl -sS 'https://s3-eu-west-1.amazonaws.com/tideways/packages/EEB5E8F4.gpg' | sudo apt-key add -
+#RUN DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tideways-daemon && \
+#    sudo apt-get autoremove --assume-yes && \
+#    sudo apt-get clean && \
+#    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
     
-ENTRYPOINT ["tideways-daemon","--hostname=tideways-daemon","--address=0.0.0.0:9135"]
+#ENTRYPOINT ["tideways-daemon","--hostname=tideways-daemon","--address=0.0.0.0:9135"]
 
-RUN sudo echo 'deb http://s3-eu-west-1.amazonaws.com/tideways/packages debian main' | sudo tee /etc/apt/sources.list.d/tideways.list && \
-    sudo curl -sS 'https://s3-eu-west-1.amazonaws.com/tideways/packages/EEB5E8F4.gpg' | sudo apt-key add - && \
-    sudo apt-get update && \
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -yq install tideways-php && \
-    sudo apt-get autoremove --assume-yes && \
-    sudo apt-get clean && \
-    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN sudo echo 'deb http://s3-eu-west-1.amazonaws.com/tideways/packages debian main' | sudo tee /etc/apt/sources.list.d/tideways.list && \
+#    sudo curl -sS 'https://s3-eu-west-1.amazonaws.com/tideways/packages/EEB5E8F4.gpg' | sudo apt-key add - && \
+#    sudo apt-get update && \
+#    DEBIAN_FRONTEND=noninteractive sudo apt-get -yq install tideways-php && \
+#    sudo apt-get autoremove --assume-yes && \
+#    sudo apt-get clean && \
+#    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN echo 'extension=tideways.so\ntideways.connection=tcp://0.0.0.0:9135\ntideways.api_key=${TIDEWAYS_APIKEY}\n' > /etc/php/7.4/cli/conf.d/40-tideways.ini
-RUN echo 'extension=tideways.so\ntideways.connection=tcp://0.0.0.0:9135\ntideways.api_key=${TIDEWAYS_APIKEY}\n' > /etc/php/7.4/fpm/conf.d/40-tideways.ini
-RUN sudo rm -f /etc/php/7.4/cli/20-tideways.ini
+#RUN echo 'extension=tideways.so\ntideways.connection=tcp://0.0.0.0:9135\ntideways.api_key=${TIDEWAYS_APIKEY}\n' > /etc/php/7.4/cli/conf.d/40-tideways.ini
+#RUN echo 'extension=tideways.so\ntideways.connection=tcp://0.0.0.0:9135\ntideways.api_key=${TIDEWAYS_APIKEY}\n' > /etc/php/7.4/fpm/conf.d/40-tideways.ini
+#RUN sudo rm -f /etc/php/7.4/cli/20-tideways.ini
 
 # Install Redis.
 RUN sudo apt-get update \
@@ -176,41 +176,41 @@ RUN echo "priority=25" > /etc/php/7.4/cli/conf.d/25-apcu_bc.ini
 RUN echo "extension=apcu.so" >> /etc/php/7.4/cli/conf.d/25-apcu_bc.ini
 RUN echo "extension=apc.so" >> /etc/php/7.4/cli/conf.d/25-apcu_bc.ini
 
-RUN sudo chown -R gitpod:gitpod /var/log/blackfire
-RUN sudo chown -R gitpod:gitpod /etc/init.d/blackfire-agent
-RUN sudo mkdir -p /var/run/blackfire
-RUN sudo chown -R gitpod:gitpod /var/run/blackfire
-RUN sudo chown -R gitpod:gitpod /etc/blackfire
+#RUN sudo chown -R gitpod:gitpod /var/log/blackfire
+#RUN sudo chown -R gitpod:gitpod /etc/init.d/blackfire-agent
+#RUN sudo mkdir -p /var/run/blackfire
+#RUN sudo chown -R gitpod:gitpod /var/run/blackfire
+#RUN sudo chown -R gitpod:gitpod /etc/blackfire
 RUN sudo chown -R gitpod:gitpod /etc/php
 RUN sudo chown -R gitpod:gitpod /etc/nginx
 RUN sudo chown -R gitpod:gitpod /etc/init.d/
 RUN sudo echo "net.core.somaxconn=65536" | sudo tee /etc/sysctl.conf
 
 #New Relic
-RUN \
-  curl -L https://download.newrelic.com/php_agent/release/newrelic-php5-9.18.1.303-linux.tar.gz | tar -C /tmp -zx && \
-  sudo NR_INSTALL_USE_CP_NOT_LN=1 NR_INSTALL_SILENT=1 /tmp/newrelic-php5-*/newrelic-install install && \
-  sudo rm -rf /tmp/newrelic-php5-* /tmp/nrinstall* && \
-  sudo touch /etc/php/7.4/fpm/conf.d/newrelic.ini && \
-  sudo touch /etc/php/7.4/cli/conf.d/newrelic.ini && \
-  sudo sed -i \
-      -e 's/"REPLACE_WITH_REAL_KEY"/"ba052d5cdafbbce81ed22048d8a004dd285aNRAL"/' \
-      -e 's/newrelic.appname = "PHP Application"/newrelic.appname = "magento2gitpod"/' \
-      -e 's/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/' \
-      -e 's/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/' \
-      /etc/php/7.4/cli/conf.d/newrelic.ini && \
-  sudo sed -i \
-      -e 's/"REPLACE_WITH_REAL_KEY"/"ba052d5cdafbbce81ed22048d8a004dd285aNRAL"/' \
-      -e 's/newrelic.appname = "PHP Application"/newrelic.appname = "magento2gitpod"/' \
-      -e 's/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/' \
-      -e 's/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/' \
-      /etc/php/7.4/fpm/conf.d/newrelic.ini && \
-  sudo sed -i 's|/var/log/newrelic/|/tmp/|g' /etc/php/7.4/fpm/conf.d/newrelic.ini && \
-  sudo sed -i 's|/var/log/newrelic/|/tmp/|g' /etc/php/7.4/cli/conf.d/newrelic.ini
+#RUN \
+#  curl -L https://download.newrelic.com/php_agent/release/newrelic-php5-9.18.1.303-linux.tar.gz | tar -C /tmp -zx && \
+#  sudo NR_INSTALL_USE_CP_NOT_LN=1 NR_INSTALL_SILENT=1 /tmp/newrelic-php5-*/newrelic-install install && \
+#  sudo rm -rf /tmp/newrelic-php5-* /tmp/nrinstall* && \
+#  sudo touch /etc/php/7.4/fpm/conf.d/newrelic.ini && \
+#  sudo touch /etc/php/7.4/cli/conf.d/newrelic.ini && \
+#  sudo sed -i \
+#      -e 's/"REPLACE_WITH_REAL_KEY"/"ba052d5cdafbbce81ed22048d8a004dd285aNRAL"/' \
+#      -e 's/newrelic.appname = "PHP Application"/newrelic.appname = "magento2gitpod"/' \
+#      -e 's/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/' \
+#      -e 's/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/' \
+#      /etc/php/7.4/cli/conf.d/newrelic.ini && \
+#  sudo sed -i \
+#      -e 's/"REPLACE_WITH_REAL_KEY"/"ba052d5cdafbbce81ed22048d8a004dd285aNRAL"/' \
+#      -e 's/newrelic.appname = "PHP Application"/newrelic.appname = "magento2gitpod"/' \
+#      -e 's/;newrelic.daemon.app_connect_timeout =.*/newrelic.daemon.app_connect_timeout=15s/' \
+#      -e 's/;newrelic.daemon.start_timeout =.*/newrelic.daemon.start_timeout=5s/' \
+#      /etc/php/7.4/fpm/conf.d/newrelic.ini && \
+#  sudo sed -i 's|/var/log/newrelic/|/tmp/|g' /etc/php/7.4/fpm/conf.d/newrelic.ini && \
+#  sudo sed -i 's|/var/log/newrelic/|/tmp/|g' /etc/php/7.4/cli/conf.d/newrelic.ini
      
 RUN sudo chown -R gitpod:gitpod /etc/php
-RUN sudo chown -R gitpod:gitpod /etc/newrelic
-COPY newrelic.cfg /etc/newrelic
+#RUN sudo chown -R gitpod:gitpod /etc/newrelic
+#COPY newrelic.cfg /etc/newrelic
 RUN sudo rm -f /usr/bin/php
 RUN sudo ln -s /usr/bin/php7.4 /usr/bin/php
 
